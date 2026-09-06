@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบบริหารและเบิกจ่ายงบประมาณสถานศึกษาโรงเรียนบ้านทองอินทร์ (งบ 69)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Sarabun', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+
+  <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-indigo-900 via-indigo-800 to-slate-900">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 space-y-6 border border-slate-100 text-center">
+      <div class="space-y-3">
+        <div class="inline-flex p-2 bg-white rounded-2xl shadow-md border border-slate-100">
+          <img src="images.jpeg" alt="ตราโรงเรียนบ้านทองอินทร์" class="w-24 h-24 object-contain mx-auto" onerror="this.src='https://placehold.co/100x100?text=Logo'">
+        </div>
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">เข้าสู่ระบบจัดการงบประมาณ</h2>
+        <p class="text-xs text-slate-500 font-medium">โรงเรียนบ้านทองอินทร์ (งบประมาณปี 2568 - 2569)</p>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 pt-1 text-left">
+        <div id="loginError" class="hidden p-3 bg-rose-50 border border-rose-200 text-rose-600 text-xs rounded-xl text-center font-medium">
+          ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">ชื่อผู้ใช้งาน (Username)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            </span>
+            <input type="text" id="loginUsername" placeholder="กรอกชื่อผู้ใช้งาน" required class="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">รหัสผ่าน (Password)</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </span>
+            <input type="password" id="loginPassword" placeholder="กรอกรหัสผ่าน" required class="w-full pl-9 pr-3 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-200 transition duration-150">
+          เข้าสู่ระบบ
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div id="mainApp" class="hidden">
+    <header class="bg-indigo-700 text-white shadow-lg sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+          <div class="bg-white p-1 rounded-xl shadow-sm flex items-center justify-center w-11 h-11 overflow-hidden">
+            <img src="images.jpeg" alt="ตราโรงเรียนบ้านทองอินทร์" class="w-full h-full object-contain" onerror="this.src='https://placehold.co/100x100?text=Logo'">
+          </div>
+          <div>
+            <h1 class="text-lg font-bold tracking-tight">ระบบบันทึกรายการเบิกจ่ายงบประมาณ</h1>
+            <p class="text-xs text-indigo-200">โรงเรียนบ้านทองอินทร์ (งบ 69)</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="exportCurrentViewCSV()" class="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg shadow transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            ส่งออก CSV
+          </button>
+          <button onclick="openMasterListModal()" class="flex items-center gap-1 px-3 py-1.5 bg-indigo-800 hover:bg-indigo-900 text-white text-xs font-medium rounded-lg shadow transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            จัดการครู/โครงการ
+          </button>
+          <button onclick="openBudgetModal()" class="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg shadow transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            งบตั้งต้นประจำปี
+          </button>
+          <button onclick="handleLogout()" class="flex items-center gap-1 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium rounded-lg shadow transition" title="ออกจากระบบ">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            ออกจากระบบ
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">งบประมาณรวมทั้งหมด</p>
+          <p id="totalBudgetDisplay" class="text-2xl font-bold text-slate-800 mt-1">0.00</p>
+          <div id="inflowBreakdownText" class="text-xs text-slate-400 mt-1">งบตั้งต้น + เงินอุดหนุนเข้า</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">เงินอุดหนุนรับเข้าสะสม (+)</p>
+          <p id="totalInflowDisplay" class="text-2xl font-bold text-emerald-600 mt-1">0.00</p>
+          <div id="inflowCountText" class="text-xs text-emerald-600 mt-1">0 รายการรับเข้า</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider">ยอดเบิกจ่ายสะสม (-)</p>
+          <p id="totalSpentDisplay" class="text-2xl font-bold text-amber-600 mt-1">0.00</p>
+          <div id="spentPercent" class="text-xs text-amber-600 mt-1">0.0% ของงบทั้งหมด</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wider">งบประมาณคงเหลือสุทธิ</p>
+          <p id="totalRemainingDisplay" class="text-2xl font-bold text-indigo-600 mt-1">0.00</p>
+          <div class="text-xs text-indigo-500 mt-1">พร้อมเบิกจ่าย</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+          <h2 class="text-base font-semibold text-slate-800 mb-4">สัดส่วนการเบิกจ่ายเทียบกับงบรวมแต่ละหมวด</h2>
+          <div class="relative flex-1 min-h-[260px]">
+            <canvas id="budgetChart"></canvas>
+          </div>
+        </div>
+        <div class="lg:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <h2 class="text-base font-semibold text-slate-800 mb-3">สรุปคงเหลือแยกหมวดหมู่</h2>
+          <div id="categoryProgressList" class="space-y-3.5 overflow-y-auto max-h-[300px] pr-1"></div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <div class="inline-flex p-1 bg-slate-100 rounded-lg text-xs font-medium">
+              <button id="viewExpenseBtn" onclick="switchTableView('EXPENSE')" class="px-3 py-1 rounded-md bg-white text-indigo-700 shadow-xs font-bold">
+                ประวัติเบิกจ่าย (<span id="countExpenseBadge">0</span>)
+              </button>
+              <button id="viewInflowBtn" onclick="switchTableView('INFLOW')" class="px-3 py-1 rounded-md text-slate-600 hover:text-emerald-700 font-bold">
+                ประวัติเงินอุดหนุนเข้า (<span id="countInflowBadge">0</span>)
+              </button>
+            </div>
+
+            <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+              <select id="filterDocType" onchange="renderApp()" class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+                <option value="ALL">ทุกเอกสาร (บค/บจ/บร)</option>
+                <option value="บค">บค (ใบเบิก)</option>
+                <option value="บจ">บจ (ใบสำคัญจ่าย)</option>
+                <option value="บร">บร (ใบเสร็จ)</option>
+              </select>
+              <select id="filterCategory" onchange="renderApp()" class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none max-w-[150px]">
+                <option value="ALL">ทุกหมวดหมู่งบ</option>
+              </select>
+              <input type="text" id="searchKeyword" oninput="renderApp()" placeholder="ค้นหารายการ..." class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none w-full sm:w-36">
+            </div>
+          </div>
+
+          <div class="overflow-x-auto flex-1">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 font-medium">
+                  <th class="py-2.5 px-3 whitespace-nowrap">วันที่</th>
+                  <th class="py-2.5 px-3 whitespace-nowrap">เอกสาร</th>
+                  <th class="py-2.5 px-3 whitespace-nowrap">หมวดงบ / บัญชี</th>
+                  <th class="py-2.5 px-3">รายละเอียดโครงการ & รายการ</th>
+                  <th id="thAmountHeader" class="py-2.5 px-3 text-right whitespace-nowrap">จำนวนเงินเบิก</th>
+                  <th class="py-2.5 px-3 text-center whitespace-nowrap">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="recordsTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lg:col-span-1 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex p-1 bg-slate-100 rounded-xl mb-4 text-xs font-semibold">
+            <button id="tabExpenseBtn" onclick="switchFormMode('EXPENSE')" class="flex-1 py-2 rounded-lg transition bg-white text-indigo-700 shadow-sm font-bold">
+              - บันทึกเบิกจ่าย
+            </button>
+            <button id="tabInflowBtn" onclick="switchFormMode('INFLOW')" class="flex-1 py-2 rounded-lg transition text-slate-500 hover:text-slate-800">
+              + บันทึกเงินอุดหนุนเข้า
+            </button>
+          </div>
+
+          <form id="expenseForm" onsubmit="handleAddExpense(event)" class="space-y-3">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">วันที่เบิก</label>
+                <input type="date" id="expDate" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">ประเภทเอกสาร</label>
+                <select id="expDocType" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none font-medium text-indigo-800">
+                  <option value="บค">บค (ใบเบิก/ฎีกา)</option>
+                  <option value="บจ">บจ (ใบสำคัญจ่าย)</option>
+                  <option value="บร">บร (ใบเสร็จรับเงิน)</option>
+                  <option value="อื่นๆ">อื่นๆ</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">เลขที่เอกสาร</label>
+                <input type="text" id="expDocNo" placeholder="เช่น 01/69" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">จำนวนเงิน (บาท)</label>
+                <input type="number" id="expAmount" step="0.01" min="0.01" placeholder="0.00" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">หมวดหมู่งบประมาณ / บัญชี</label>
+              <select id="expCategory" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none"></select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">ชื่อโครงการ</label>
+              <select id="expProject" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none"></select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">ผู้รับผิดชอบ / ผู้ขอเบิก</label>
+              <select id="expResponsible" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none"></select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">รายการ / รายละเอียดการเบิก</label>
+              <input type="text" id="expTitle" placeholder="เช่น ค่าวัสดุการเรียน" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">หมายเหตุเพิ่มเติม</label>
+              <input type="text" id="expNote" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+            </div>
+
+            <button type="submit" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow transition">
+              - บันทึกรายการเบิกจ่าย
+            </button>
+          </form>
+
+          <form id="inflowForm" onsubmit="handleAddInflow(event)" class="space-y-3 hidden">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">วันที่ได้รับเงิน</label>
+                <input type="date" id="inflowDate" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">เอกสารอ้างอิง</label>
+                <select id="inflowDocType" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none font-medium text-emerald-800">
+                  <option value="บร">บร (ใบเสร็จรับเงิน)</option>
+                  <option value="หนังสือแจ้งจัดสรร">หนังสือแจ้งจัดสรร</option>
+                  <option value="ใบนำฝาก/โอนเงิน">ใบนำฝาก/โอนเงิน</option>
+                  <option value="อื่นๆ">อื่นๆ</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">เลขที่เอกสาร</label>
+                <input type="text" id="inflowDocNo" placeholder="เช่น บร.01/69" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">จำนวนเงินรับ (บาท)</label>
+                <input type="number" id="inflowAmount" step="0.01" min="0.01" placeholder="0.00" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">หมวดหมู่งบที่ได้รับเงิน / บัญชี</label>
+              <select id="inflowCategory" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none"></select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">รายการ / ที่มาของเงินอุดหนุน</label>
+              <input type="text" id="inflowTitle" placeholder="เช่น เงินอุดหนุนงวดที่ 1" required class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">แหล่งที่มา / หมายเหตุ</label>
+              <input type="text" id="inflowNote" placeholder="เช่น สพป., อบต., กสศ." class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+            </div>
+            <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow transition">
+              + บันทึกรับเงินอุดหนุน
+            </button>
+          </form>
+
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <div id="masterListModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-lg font-bold text-slate-800">จัดการลิสต์รายชื่อผู้รับผิดชอบ และชื่อโครงการ</h3>
+        <button onclick="document.getElementById('masterListModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border border-slate-200 p-3 rounded-xl space-y-2">
+          <label class="block text-xs font-bold text-indigo-700">รายชื่อผู้รับผิดชอบ / ครู</label>
+          <div class="flex gap-1.5">
+            <input type="text" id="newTeacherInput" placeholder="เพิ่มชื่อครู..." class="flex-1 px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+            <button onclick="addTeacherItem()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg">+ เพิ่ม</button>
+          </div>
+          <div id="teachersListDisplay" class="max-h-48 overflow-y-auto space-y-1 pr-1 text-xs"></div>
+        </div>
+
+        <div class="border border-slate-200 p-3 rounded-xl space-y-2">
+          <label class="block text-xs font-bold text-indigo-700">รายชื่อโครงการ</label>
+          <div class="flex gap-1.5">
+            <input type="text" id="newProjectInput" placeholder="เพิ่มชื่อโครงการ..." class="flex-1 px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none">
+            <button onclick="addProjectItem()" class="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg">+ เพิ่ม</button>
+          </div>
+          <div id="projectsListDisplay" class="max-h-48 overflow-y-auto space-y-1 pr-1 text-xs"></div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-3 border-t">
+        <button onclick="document.getElementById('masterListModal').classList.add('hidden')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg">เรียบร้อย</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="budgetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="text-lg font-bold text-slate-800">กำหนดวงเงินงบประมาณตั้งต้นประจำปี</h3>
+        <button onclick="document.getElementById('budgetModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg">✕</button>
+      </div>
+      <div id="budgetSettingsList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+      <div class="flex justify-end gap-2 pt-3 border-t">
+        <button onclick="document.getElementById('budgetModal').classList.add('hidden')" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-lg">ปิด</button>
+        <button onclick="saveBudgets()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg">บันทึกงบตั้งต้น</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Authentication State
+    const AUTH_KEY = 'banthongin_auth_status';
+    const DEFAULT_USER = 'admin';
+    const DEFAULT_PASS = '123456';
+
+    function checkAuth() {
+      const isAuthenticated = sessionStorage.getItem(AUTH_KEY) === 'true';
+      if (isAuthenticated) {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainApp').classList.remove('hidden');
+        initApp();
+      } else {
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      const errBox = document.getElementById('loginError');
+
+      if (u === DEFAULT_USER && p === DEFAULT_PASS) {
+        sessionStorage.setItem(AUTH_KEY, 'true');
+        errBox.classList.add('hidden');
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        checkAuth();
+      } else {
+        errBox.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      if (confirm("ต้องการออกจากระบบใช่หรือไม่?")) {
+        sessionStorage.removeItem(AUTH_KEY);
+        checkAuth();
+      }
+    }
+
+    // Default Seed Data
+    const DEFAULT_BASE_BUDGETS = {
+      "ค่าจัดการเรียนการสอน": 295510,
+      "ค่าหนังสือเรียน": 144112,
+      "ค่าอุปกรณ์การเรียน": 47905,
+      "ค่าเครื่องแบบนักเรียน": 92125,
+      "ค่ากิจกรรมพัฒนาผู้เรียน": 73143,
+      "ปัจจัยพื้นฐานนักเรียนยากจน": 35000,
+      "เงินอุดหนุน กสศ. (ทุนเสมอภาค)": 45000,
+      "เงินอุดหนุนอาหารกลางวัน": 120000,
+      "รายได้สถานศึกษา": 50000
+    };
+
+    const DEFAULT_TEACHERS = [
+      "ครูวิชาการ (นางสาวสุภาพร)",
+      "ครูการเงิน (นางพัชรี)",
+      "ครูพัสดุ (นายสมชาย)",
+      "ครูปฐมวัย (นางนิตยา)",
+      "ครูผู้ดูแลโครงการอาหารกลางวัน",
+      "ครูผู้รับผิดชอบงาน กสศ."
+    ];
+
+    const DEFAULT_PROJECTS = [
+      "โครงการพัฒนาคุณภาพการจัดการศึกษา",
+      "โครงการสนับสนุนค่าใช้จ่ายในการจัดการศึกษาขั้นพื้นฐาน (เรียนฟรี 15 ปี)",
+      "โครงการจัดหาแบบเรียนและสื่อการสอน",
+      "โครงการกิจกรรมพัฒนาผู้เรียนและทัศนศึกษา",
+      "โครงการสนับสนุนเงินอุดหนุนปัจจัยพื้นฐานนักเรียนยากจน",
+      "โครงการเงินอุดหนุนนักเรียนทุนเสมอภาค กสศ.",
+      "โครงการอาหารกลางวันนักเรียน",
+      "โครงการปรับปรุงภูมิทัศน์และสาธารณูปโภคสถานศึกษา"
+    ];
+
+    const DEFAULT_TRANSACTIONS = [
+      { id: 1, date: "2025-10-10", docType: "บค", docNo: "01/69", category: "ค่าอุปกรณ์การเรียน", project: "โครงการสนับสนุนค่าใช้จ่ายในการจัดการศึกษาขั้นพื้นฐาน (เรียนฟรี 15 ปี)", responsible: "ครูปฐมวัย (นางนิตยา)", title: "จัดซื้ออุปกรณ์การเรียน ปฐมวัย", amount: 220, note: "เบิกจ่ายงวด 1" },
+      { id: 2, date: "2025-10-22", docType: "บค", docNo: "02/69", category: "ค่ากิจกรรมพัฒนาผู้เรียน", project: "โครงการกิจกรรมพัฒนาผู้เรียนและทัศนศึกษา", responsible: "ครูวิชาการ (นางสาวสุภาพร)", title: "กิจกรรมค่ายวิชาการ", amount: 7600, note: "" }
+    ];
+
+    const DEFAULT_INFLOWS = [
+      { id: 101, date: "2025-10-01", docType: "หนังสือแจ้งจัดสรร", docNo: "ศธ 04055/124", category: "ค่าจัดการเรียนการสอน", title: "เงินจัดสรรอุดหนุนรายหัว งวดที่ 1", amount: 150000, note: "สพป." }
+    ];
+
+    let baseBudgets = JSON.parse(localStorage.getItem('budget_allocation')) || DEFAULT_BASE_BUDGETS;
+    let teachers = JSON.parse(localStorage.getItem('budget_teachers')) || DEFAULT_TEACHERS;
+    let projects = JSON.parse(localStorage.getItem('budget_projects')) || DEFAULT_PROJECTS;
+    let transactions = JSON.parse(localStorage.getItem('budget_transactions')) || DEFAULT_TRANSACTIONS;
+    let inflows = JSON.parse(localStorage.getItem('budget_inflows')) || DEFAULT_INFLOWS;
+    let currentTableView = 'EXPENSE';
+    let chartInstance = null;
+
+    function formatNumber(num) {
+      return Number(num).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function initApp() {
+      const today = new Date().toISOString().split('T')[0];
+      const expDate = document.getElementById('expDate');
+      const infDate = document.getElementById('inflowDate');
+      if (expDate) expDate.value = today;
+      if (infDate) infDate.value = today;
+      populateDropdowns();
+      renderApp();
+    }
+
+    function switchFormMode(mode) {
+      const tabExpBtn = document.getElementById('tabExpenseBtn');
+      const tabInfBtn = document.getElementById('tabInflowBtn');
+      const expForm = document.getElementById('expenseForm');
+      const infForm = document.getElementById('inflowForm');
+
+      if (mode === 'EXPENSE') {
+        tabExpBtn.className = 'flex-1 py-2 rounded-lg transition bg-white text-indigo-700 shadow-sm font-bold';
+        tabInfBtn.className = 'flex-1 py-2 rounded-lg transition text-slate-500 hover:text-slate-800';
+        expForm.classList.remove('hidden');
+        infForm.classList.add('hidden');
+      } else {
+        tabInfBtn.className = 'flex-1 py-2 rounded-lg transition bg-white text-emerald-700 shadow-sm font-bold';
+        tabExpBtn.className = 'flex-1 py-2 rounded-lg transition text-slate-500 hover:text-slate-800';
+        infForm.classList.remove('hidden');
+        expForm.classList.add('hidden');
+      }
+    }
+
+    function switchTableView(view) {
+      currentTableView = view;
+      const expBtn = document.getElementById('viewExpenseBtn');
+      const infBtn = document.getElementById('viewInflowBtn');
+      const thHeader = document.getElementById('thAmountHeader');
+
+      if (view === 'EXPENSE') {
+        expBtn.className = 'px-3 py-1 rounded-md bg-white text-indigo-700 shadow-xs font-bold';
+        infBtn.className = 'px-3 py-1 rounded-md text-slate-600 hover:text-emerald-700 font-medium';
+        thHeader.textContent = 'จำนวนเงินเบิก';
+        thHeader.className = 'py-2.5 px-3 text-right whitespace-nowrap text-amber-700';
+      } else {
+        infBtn.className = 'px-3 py-1 rounded-md bg-white text-emerald-700 shadow-xs font-bold';
+        expBtn.className = 'px-3 py-1 rounded-md text-slate-600 hover:text-indigo-700 font-medium';
+        thHeader.textContent = 'จำนวนเงินที่ได้รับ';
+        thHeader.className = 'py-2.5 px-3 text-right whitespace-nowrap text-emerald-700';
+      }
+      renderApp();
+    }
+
+    function populateDropdowns() {
+      const expCat = document.getElementById('expCategory');
+      const infCat = document.getElementById('inflowCategory');
+      const filterCat = document.getElementById('filterCategory');
+      const cats = Object.keys(baseBudgets);
+
+      const catOptions = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+      if (expCat) expCat.innerHTML = catOptions;
+      if (infCat) infCat.innerHTML = catOptions;
+      if (filterCat) filterCat.innerHTML = `<option value="ALL">ทุกหมวดหมู่งบประมาณ</option>` + catOptions;
+
+      const expResp = document.getElementById('expResponsible');
+      if (expResp) expResp.innerHTML = teachers.map(t => `<option value="${t}">${t}</option>`).join('');
+
+      const expProj = document.getElementById('expProject');
+      if (expProj) expProj.innerHTML = projects.map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    function openMasterListModal() {
+      renderMasterListItems();
+      document.getElementById('masterListModal').classList.remove('hidden');
+    }
+
+    function renderMasterListItems() {
+      const tDiv = document.getElementById('teachersListDisplay');
+      tDiv.innerHTML = teachers.map((t, idx) => `
+        <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded border border-slate-100">
+          <span class="truncate">${t}</span>
+          <button onclick="removeTeacherItem(${idx})" class="text-rose-500 hover:text-rose-700 px-1 font-bold">✕</button>
+        </div>
+      `).join('');
+
+      const pDiv = document.getElementById('projectsListDisplay');
+      pDiv.innerHTML = projects.map((p, idx) => `
+        <div class="flex items-center justify-between p-1.5 bg-slate-50 rounded border border-slate-100">
+          <span class="truncate">${p}</span>
+          <button onclick="removeProjectItem(${idx})" class="text-rose-500 hover:text-rose-700 px-1 font-bold">✕</button>
+        </div>
+      `).join('');
+    }
+
+    function addTeacherItem() {
+      const input = document.getElementById('newTeacherInput');
+      const val = input.value.trim();
+      if (val && !teachers.includes(val)) {
+        teachers.push(val);
+        localStorage.setItem('budget_teachers', JSON.stringify(teachers));
+        input.value = '';
+        renderMasterListItems();
+        populateDropdowns();
+      }
+    }
+
+    function removeTeacherItem(idx) {
+      if (confirm(`ต้องการลบรายชื่อ "${teachers[idx]}" หรือไม่?`)) {
+        teachers.splice(idx, 1);
+        localStorage.setItem('budget_teachers', JSON.stringify(teachers));
+        renderMasterListItems();
+        populateDropdowns();
+      }
+    }
+
+    function addProjectItem() {
+      const input = document.getElementById('newProjectInput');
+      const val = input.value.trim();
+      if (val && !projects.includes(val)) {
+        projects.push(val);
+        localStorage.setItem('budget_projects', JSON.stringify(projects));
+        input.value = '';
+        renderMasterListItems();
+        populateDropdowns();
+      }
+    }
+
+    function removeProjectItem(idx) {
+      if (confirm(`ต้องการลบโครงการ "${projects[idx]}" หรือไม่?`)) {
+        projects.splice(idx, 1);
+        localStorage.setItem('budget_projects', JSON.stringify(projects));
+        renderMasterListItems();
+        populateDropdowns();
+      }
+    }
+
+    function openBudgetModal() {
+      const cats = Object.keys(baseBudgets);
+      const budgetSettingsList = document.getElementById('budgetSettingsList');
+      budgetSettingsList.innerHTML = cats.map(c => `
+        <div class="flex items-center justify-between gap-3">
+          <label class="text-xs font-semibold text-slate-700 w-1/2">${c}</label>
+          <input type="number" id="budget_input_${c}" value="${baseBudgets[c]}" step="100" class="w-1/2 px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none text-right">
+        </div>
+      `).join('');
+      document.getElementById('budgetModal').classList.remove('hidden');
+    }
+
+    function saveBudgets() {
+      Object.keys(baseBudgets).forEach(c => {
+        const val = parseFloat(document.getElementById(`budget_input_${c}`).value) || 0;
+        baseBudgets[c] = val;
+      });
+      localStorage.setItem('budget_allocation', JSON.stringify(baseBudgets));
+      document.getElementById('budgetModal').classList.add('hidden');
+      renderApp();
+    }
+
+    function handleAddExpense(e) {
+      e.preventDefault();
+      const newTx = {
+        id: Date.now(),
+        date: document.getElementById('expDate').value,
+        docType: document.getElementById('expDocType').value,
+        docNo: document.getElementById('expDocNo').value.trim(),
+        category: document.getElementById('expCategory').value,
+        project: document.getElementById('expProject').value,
+        responsible: document.getElementById('expResponsible').value,
+        title: document.getElementById('expTitle').value,
+        amount: parseFloat(document.getElementById('expAmount').value),
+        note: document.getElementById('expNote').value
+      };
+      transactions.unshift(newTx);
+      localStorage.setItem('budget_transactions', JSON.stringify(transactions));
+      document.getElementById('expDocNo').value = '';
+      document.getElementById('expTitle').value = '';
+      document.getElementById('expAmount').value = '';
+      document.getElementById('expNote').value = '';
+      renderApp();
+    }
+
+    function deleteTransaction(id) {
+      if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?")) {
+        transactions = transactions.filter(t => t.id !== id);
+        localStorage.setItem('budget_transactions', JSON.stringify(transactions));
+        renderApp();
+      }
+    }
+
+    function handleAddInflow(e) {
+      e.preventDefault();
+      const newInflow = {
+        id: Date.now(),
+        date: document.getElementById('inflowDate').value,
+        docType: document.getElementById('inflowDocType').value,
+        docNo: document.getElementById('inflowDocNo').value.trim(),
+        category: document.getElementById('inflowCategory').value,
+        title: document.getElementById('inflowTitle').value,
+        amount: parseFloat(document.getElementById('inflowAmount').value),
+        note: document.getElementById('inflowNote').value
+      };
+      inflows.unshift(newInflow);
+      localStorage.setItem('budget_inflows', JSON.stringify(inflows));
+      document.getElementById('inflowDocNo').value = '';
+      document.getElementById('inflowTitle').value = '';
+      document.getElementById('inflowAmount').value = '';
+      document.getElementById('inflowNote').value = '';
+      switchTableView('INFLOW');
+      renderApp();
+    }
+
+    function deleteInflow(id) {
+      if (confirm("คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?")) {
+        inflows = inflows.filter(i => i.id !== id);
+        localStorage.setItem('budget_inflows', JSON.stringify(inflows));
+        renderApp();
+      }
+    }
+
+    function getDocBadge(type, no) {
+      if (!type) return '<span class="text-slate-300">-</span>';
+      let colorClass = 'bg-slate-100 text-slate-700 border-slate-200';
+      if (type === 'บค') colorClass = 'bg-blue-50 text-blue-700 border-blue-200';
+      else if (type === 'บจ') colorClass = 'bg-amber-50 text-amber-700 border-amber-200';
+      else if (type === 'บร') colorClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      return `
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${colorClass}">
+          <span>${type}</span>${no ? `<span class="opacity-75 font-normal">#${no}</span>` : ''}
+        </span>
+      `;
+    }
+
+    function renderApp() {
+      const totalBaseBudget = Object.values(baseBudgets).reduce((a, b) => a + b, 0);
+      const totalInflow = inflows.reduce((a, b) => a + b.amount, 0);
+      const totalBudgetWithInflows = totalBaseBudget + totalInflow;
+      const totalSpent = transactions.reduce((a, b) => a + b.amount, 0);
+      const totalRemaining = totalBudgetWithInflows - totalSpent;
+      const spentPct = totalBudgetWithInflows > 0 ? ((totalSpent / totalBudgetWithInflows) * 100).toFixed(1) : 0;
+
+      document.getElementById('totalBudgetDisplay').textContent = formatNumber(totalBudgetWithInflows);
+      document.getElementById('inflowBreakdownText').textContent = `ตั้งต้น ${formatNumber(totalBaseBudget)} + รับเพิ่ม ${formatNumber(totalInflow)}`;
+      document.getElementById('totalInflowDisplay').textContent = '+' + formatNumber(totalInflow);
+      document.getElementById('inflowCountText').textContent = `${inflows.length} รายการรับเงินอุดหนุน`;
+      document.getElementById('totalSpentDisplay').textContent = '-' + formatNumber(totalSpent);
+      document.getElementById('spentPercent').textContent = `${spentPct}% ของงบประมาณรวม`;
+      document.getElementById('totalRemainingDisplay').textContent = formatNumber(totalRemaining);
+      
+      document.getElementById('countExpenseBadge').textContent = transactions.length;
+      document.getElementById('countInflowBadge').textContent = inflows.length;
+
+      const catBudgets = {};
+      const catSpent = {};
+      const catInflow = {};
+      
+      Object.keys(baseBudgets).forEach(c => {
+        catBudgets[c] = baseBudgets[c];
+        catSpent[c] = 0;
+        catInflow[c] = 0;
+      });
+
+      inflows.forEach(inf => {
+        if (catInflow[inf.category] !== undefined) {
+          catInflow[inf.category] += inf.amount;
+          catBudgets[inf.category] += inf.amount;
+        }
+      });
+
+      transactions.forEach(t => {
+        if (catSpent[t.category] !== undefined) {
+          catSpent[t.category] += t.amount;
+        }
+      });
+
+      const catProgressList = document.getElementById('categoryProgressList');
+      catProgressList.innerHTML = Object.keys(baseBudgets).map(c => {
+        const totalCatBudget = catBudgets[c];
+        const spent = catSpent[c] || 0;
+        const infAmount = catInflow[c] || 0;
+        const remain = totalCatBudget - spent;
+        const pct = totalCatBudget > 0 ? Math.min(100, Math.round((spent / totalCatBudget) * 100)) : 0;
+        const isExceeded = remain < 0;
+
+        return `
+          <div>
+            <div class="flex justify-between text-xs font-medium text-slate-700 mb-1">
+              <span class="truncate">${c} ${infAmount > 0 ? `<span class="text-[10px] text-emerald-600 font-bold">(+${formatNumber(infAmount)})</span>` : ''}</span>
+              <span class="${isExceeded ? 'text-rose-600 font-bold' : 'text-slate-500'}">
+                เหลือ ${formatNumber(remain)} (${pct}%)
+              </span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div class="h-2 rounded-full ${isExceeded ? 'bg-rose-500' : 'bg-indigo-600'}" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const filterDoc = document.getElementById('filterDocType').value;
+      const filterCat = document.getElementById('filterCategory').value;
+      const search = (document.getElementById('searchKeyword').value || '').toLowerCase();
+      const tbody = document.getElementById('recordsTableBody');
+
+      if (currentTableView === 'EXPENSE') {
+        const filtered = transactions.filter(t => {
+          const matchDoc = filterDoc === 'ALL' || t.docType === filterDoc;
+          const matchCat = filterCat === 'ALL' || t.category === filterCat;
+          const matchSearch = t.title.toLowerCase().includes(search) || (t.note && t.note.toLowerCase().includes(search));
+          return matchDoc && matchCat && matchSearch;
+        });
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">ไม่พบรายการเบิกจ่าย</td></tr>`;
+        } else {
+          tbody.innerHTML = filtered.map(t => `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+              <td class="py-2.5 px-3 text-slate-600 whitespace-nowrap text-xs">${t.date}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap">${getDocBadge(t.docType, t.docNo)}</td>
+              <td class="py-2.5 px-3 font-medium text-indigo-700 whitespace-nowrap"><span class="bg-indigo-50 px-2 py-0.5 rounded text-xs">${t.category}</span></td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-800">${t.title}</div>
+                <div class="text-[11px] text-slate-500 flex flex-wrap gap-2 mt-0.5">
+                  ${t.project ? `<span class="bg-slate-100 px-1.5 rounded">📂 ${t.project}</span>` : ''}
+                  ${t.responsible ? `<span class="text-indigo-600">👤 ${t.responsible}</span>` : ''}
+                </div>
+              </td>
+              <td class="py-2.5 px-3 text-right font-semibold text-amber-700 whitespace-nowrap">-${formatNumber(t.amount)}</td>
+              <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                <button onclick="deleteTransaction(${t.id})" class="text-rose-500 hover:text-rose-700 p-1">✕</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      } else {
+        const filteredInflows = inflows.filter(inf => {
+          const matchDoc = filterDoc === 'ALL' || inf.docType === filterDoc;
+          const matchCat = filterCat === 'ALL' || inf.category === filterCat;
+          const matchSearch = inf.title.toLowerCase().includes(search);
+          return matchDoc && matchCat && matchSearch;
+        });
+
+        if (filteredInflows.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 text-xs">ไม่พบประวัติการรับเงินอุดหนุน</td></tr>`;
+        } else {
+          tbody.innerHTML = filteredInflows.map(inf => `
+            <tr class="hover:bg-slate-50 transition border-b border-slate-100 bg-emerald-50/20">
+              <td class="py-2.5 px-3 text-slate-600 whitespace-nowrap text-xs">${inf.date}</td>
+              <td class="py-2.5 px-3 whitespace-nowrap">${getDocBadge(inf.docType, inf.docNo)}</td>
+              <td class="py-2.5 px-3 font-medium text-emerald-700 whitespace-nowrap"><span class="bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded text-xs">${inf.category}</span></td>
+              <td class="py-2.5 px-3">
+                <div class="font-medium text-slate-800">${inf.title}</div>
+                ${inf.note ? `<div class="text-[11px] text-slate-400">ที่มา: ${inf.note}</div>` : ''}
+              </td>
+              <td class="py-2.5 px-3 text-right font-semibold text-emerald-600 whitespace-nowrap">+${formatNumber(inf.amount)}</td>
+              <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                <button onclick="deleteInflow(${inf.id})" class="text-rose-500 hover:text-rose-700 p-1">✕</button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      renderChart(catBudgets, catSpent);
+    }
+
+    function renderChart(catBudgets, catSpent) {
+      const ctx = document.getElementById('budgetChart').getContext('2d');
+      const labels = Object.keys(baseBudgets);
+      const budgetData = labels.map(c => catBudgets[c] || 0);
+      const spentData = labels.map(c => catSpent[c] || 0);
+
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'งบประมาณรวม (ตั้งต้น+รับเข้า)',
+              data: budgetData,
+              backgroundColor: 'rgba(99, 102, 241, 0.35)',
+              borderColor: 'rgb(99, 102, 241)',
+              borderWidth: 1.5,
+              borderRadius: 6
+            },
+            {
+              label: 'ยอดเบิกจ่ายแล้ว',
+              data: spentData,
+              backgroundColor: 'rgba(245, 158, 11, 0.85)',
+              borderColor: 'rgb(245, 158, 11)',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            x: { ticks: { maxRotation: 30 } },
+            y: { ticks: { callback: v => v.toLocaleString() } }
+          }
+        }
+      });
+    }
+
+    function exportCurrentViewCSV() {
+      let csvContent = "\uFEFFลำดับ,ประเภท,วันที่,ประเภทเอกสาร,เลขที่เอกสาร,หมวดงบ,รายการ,จำนวนเงิน,หมายเหตุ\n";
+      transactions.forEach((t, i) => {
+        csvContent += `${i + 1},"เบิกจ่าย","${t.date}","${t.docType}","${t.docNo}","${t.category}","${t.title}",-${t.amount},"${t.note}"\n`;
+      });
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `รายงานงบประมาณ_${new Date().toISOString().split('T')[0]}.csv`;
+      link.click();
+    }
+
+    window.onload = checkAuth;
+  </script>
+</body>
+</html>
